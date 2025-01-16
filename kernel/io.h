@@ -1,16 +1,16 @@
-#ifndef IO_H
-#define IO_H
+#ifndef ISR_H
+#define ISR_H
 
 #include <stdint.h>
 
-static inline void outb(uint16_t port, uint8_t val) {
-    asm volatile ("outb %0, %1" : : "a"(val), "Nd"(port));
-}
+typedef struct {
+    uint32_t ds;
+    uint32_t edi, esi, ebp, esp, ebx, edx, ecx, eax;
+    uint32_t int_no, err_code;
+    uint32_t eip, cs, eflags, useresp, ss;
+} registers_t;
 
-static inline uint8_t inb(uint16_t port) {
-    uint8_t ret;
-    asm volatile ("inb %1, %0" : "=a"(ret) : "Nd"(port));
-    return ret;
-}
+void isr_handler(registers_t regs);
+void isr_install();
 
-#endif // IO_H
+#endif // ISR_H
