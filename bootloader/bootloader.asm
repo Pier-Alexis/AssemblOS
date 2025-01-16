@@ -1,4 +1,4 @@
-; filepath: /boot/boot.asm
+; filepath: /home/pariki/AssemblOS/bootloader/bootloader.asm
 BITS 16
 ORG 0x7C00
 
@@ -11,19 +11,26 @@ start:
     mov ss, ax
     mov sp, 0x7C00
 
-    ; Afficher un message
-    mov si, msg
-print:
-    lodsb
-    cmp al, 0
-    je done
-    mov ah, 0x0E
-    int 0x10
-    jmp print
-done:
+    ; Initialisation du contrôleur d'interruptions
+    mov al, 0x11
+    out 0x20, al
+    out 0xA0, al
+    mov al, 0x20
+    out 0x21, al
+    mov al, 0x28
+    out 0xA1, al
+    mov al, 0x04
+    out 0x21, al
+    mov al, 0x02
+    out 0xA1, al
+    mov al, 0x01
+    out 0x21, al
+    out 0xA1, al
+    mov al, 0x0
+    out 0x21, al
 
-    ; Charger le kernel
-    mov bx, 0x1000
+    ; Charger le stage2
+    mov bx, 0x2000
     mov dh, 1
     mov dl, 0
     mov ch, 0
@@ -31,43 +38,28 @@ done:
     mov ah, 0x02
     int 0x13
 
-    ; Passer en mode protégé
-    cli
-    lgdt [gdt_descriptor]
-    mov eax, cr0
-    or eax, 1
-    mov cr0, eax
-    jmp 0x08:protected_mode
+    ; Vérifier les erreurs de chargement
+    jc load_error
 
-[bits 32]
-protected_mode:
-    ; Initialisation des segments
-    mov ax, 0x10
-    mov ds, ax
-    mov es, ax
-    mov fs, ax
-    mov gs, ax
-    mov ss, ax
-    mov esp, 0x90000
+    ; Sauter au stage2
+    jmp 0x2000:0x0000
 
-    ; Appeler le kernel
-    call 0x1000
+load_error:
+    ; Afficher un message d'erreur
+    mov si, err_msg
+print_error:
+    lodsb
+    cmp al, 0
+    je hang
+    mov ah, 0x0E
+    int 0x10
+    jmp print_error
 
 hang:
     hlt
     jmp hang
 
-msg db 'Booting...', 0
-
-gdt_start:
-    dq 0x0000000000000000
-    dq 0x00CF9A000000FFFF
-    dq 0x00CF92000000FFFF
-gdt_end:
-
-gdt_descriptor:
-    dw gdt_end - gdt_start - 1
-    dd gdt_start
+err_msg db 'Erreur de chargement du stage2', 0
 
 times 510-($-$$) db 0
 dw 0xAA55
