@@ -1,11 +1,22 @@
 AssemblOS/
 ├── bootloader/
-│   └── bootloader.asm
+│   ├── bootloader.asm
+│   ├── stage2.asm
 ├── kernel/
-│   └── kernel.asm
+│   ├── kernel.asm
+│   ├── interrupts.asm
+│   ├── memory.asm
+│   ├── io.asm
 ├── docs/
-│   └── architecture.md
+│   ├── architecture.md
+│   ├── boot_process.md
+│   └── kernel_design.md
 ├── tools/
-│   └── build.sh
+│   ├── build.sh
+│   ├── clean.sh
+│   ├── run.sh
+├── config/
+│   ├── settings.cfg
+│   └── bootloader_config.cfg
 ├── README.md
 └── .gitignore
