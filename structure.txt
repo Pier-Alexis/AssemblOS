@@ -1,0 +1,11 @@
+AssemblOS/
+├── bootloader/
+│   └── bootloader.asm
+├── kernel/
+│   └── kernel.asm
+├── docs/
+│   └── architecture.md
+├── tools/
+│   └── build.sh
+├── README.md
+└── .gitignore
