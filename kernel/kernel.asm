@@ -1,23 +1,35 @@
-bits 32
+; filepath: /kernel/kernel.asm
+BITS 32
 
-section .data
-idt_pointer:
-    dw 256 * 8 - 1       ; Taille de l'IDT
-    dd idt_table         ; Adresse de l'IDT
-
-section .bss
-align 8
-idt_table resb 256 * 8  ; 256 entrées, 8 octets par entrée
-
-section .text
-global start, load_idt
-
+global start
 start:
-    ; Initialisation du noyau
-    call load_idt
-    hlt
+    ; Afficher un message
+    mov edx, msg
+print:
+    lodsb
+    cmp al, 0
+    je done
+    mov ah, 0x0E
+    int 0x10
+    jmp print
+done:
 
-load_idt:
-    ; Charger le registre IDT
-    lidt [idt_pointer]
-    ret
+    ; Initialisation des interruptions
+    cli
+    lidt [idt_descriptor]
+    sti
+
+    ; Boucle infinie
+hang:
+    hlt
+    jmp hang
+
+msg db 'Kernel loaded!', 0
+
+idt_start:
+    times 256 dq 0
+idt_end:
+
+idt_descriptor:
+    dw idt_end - idt_start - 1
+    dd idt_start
