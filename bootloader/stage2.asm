@@ -1,6 +1,6 @@
-; filepath: /home/pariki/AssemblOS/stage2/stage2.asm
+; filepath: /home/pariki/AssemblOS/bootloader/bootloader.asm
 BITS 16
-ORG 0x2000
+ORG 0x7C00
 
 start:
     ; Initialisation du segment de pile
@@ -11,46 +11,53 @@ start:
     mov ss, ax
     mov sp, 0x7C00
 
-    ; Afficher un message
-    mov si, msg
-print:
+    ; Initialisation du contrôleur d'interruptions
+    mov al, 0x11
+    out 0x20, al
+    out 0xA0, al
+    mov al, 0x20
+    out 0x21, al
+    mov al, 0x28
+    out 0xA1, al
+    mov al, 0x04
+    out 0x21, al
+    mov al, 0x02
+    out 0xA1, al
+    mov al, 0x01
+    out 0x21, al
+    out 0xA1, al
+    mov al, 0x0
+    out 0x21, al
+
+    ; Charger le stage2
+    mov bx, 0x2000
+    mov dh, 1
+    mov dl, 0
+    mov ch, 0
+    mov cl, 2
+    mov ah, 0x02
+    int 0x13
+    jc load_error
+
+    ; Sauter à stage2
+    jmp 0x2000:0x0000
+
+load_error:
+    ; Afficher un message d'erreur
+    mov si, err_msg
+print_error:
     lodsb
     cmp al, 0
-    je done
+    je hang
     mov ah, 0x0E
     int 0x10
-    jmp print
-done:
-; Charger le noyau
-mov bx, 0x1000  ; Adresse de chargement du noyau
-mov dh, 0x02    ; Nombre de secteurs à lire
-mov dl, 0x00    ; Numéro de disque (0x00 pour le disque de démarrage)
-mov ch, 0x00    ; Numéro de piste
-mov cl, 0x02    ; Numéro de secteur (le premier secteur après le bootloader)
-mov ah, 0x02    ; Fonction de lecture de secteur
-int 0x13        ; Appel d'interruption du BIOS pour lire le secteur
+    jmp print_error
 
-; Vérifier si la lecture a réussi
-jc disk_error   ; S'il y a une erreur, sauter à disk_error
-
-; Sauter à l'adresse de chargement du noyau
-jmp 0x1000:0000
-
-disk_error:
-; Afficher un message d'erreur
-mov si, err_msg
-print_err:
-lodsb
-cmp al, 0
-je hang
-mov ah, 0x0E
-int 0x10
-jmp print_err
-
-err_msg db 'Erreur de chargement du noyau!', 0
-    ; Boucle infinie
 hang:
     hlt
     jmp hang
 
-msg db 'Stage2 loaded!', 0
+err_msg db 'Erreur de chargement du stage2', 0
+
+times 510-($-$$) db 0
+dw 0xAA55

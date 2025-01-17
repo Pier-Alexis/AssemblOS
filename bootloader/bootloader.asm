@@ -37,11 +37,13 @@ start:
     mov cl, 2
     mov ah, 0x02
     int 0x13
-
-    ; Vérifier les erreurs de chargement
     jc load_error
 
-    ; Sauter au stage2
+    ; Sauter à stage2
+    ; Copilot write this line so i dont know if it is good since im a big noob at asm
+    ; normally i would like to put jump 0x2000 without the 0x0000 but if copilot said it was like this
+    ; after somes conversation with copilot he said that my code and hes code was real mode bootloader
+    ; So jump 0x2000:0x0000 where 0x2000 is the adress and 0x0000 the "offset" (dunno waths this for now, but idc)
     jmp 0x2000:0x0000
 
 load_error:
