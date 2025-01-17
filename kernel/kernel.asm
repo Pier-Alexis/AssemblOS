@@ -1,7 +1,9 @@
-; filepath: /kernel/kernel.asm
+; filepath: /home/pariki/AssemblOS/kernel/kernel.asm
 BITS 32
 
 global start
+extern hello_start
+
 section .text
 start:
     mov edx, msg
@@ -17,9 +19,11 @@ print:
 done:
     cli
     call init_idt
+    call init_pic
     sti
     call init_window_manager
     call logon
+    call hello_start  ; Appeler hello.asm après toutes les initialisations
 hang:
     hlt
     jmp hang
@@ -106,16 +110,47 @@ draw_border_done:
 
 keyboard_handler:
     pusha
-    mov ah, 0
-    int 0x16
-    mov [key], al
+    mov al, 0x20
+    out 0x20, al
+    popa
+    iret
+
+mouse_handler:
+    pusha
+    mov al, 0x20
+    out 0xA0, al
+    out 0x20, al
     popa
     iret
 
 init_idt:
+    ; Initialiser les entrées de l'IDT pour le clavier et la souris
     mov eax, keyboard_handler
-    mov [idt_start + 4 * 9], eax
+    mov [idt_start + 4 * 33], eax
+    mov eax, mouse_handler
+    mov [idt_start + 4 * 44], eax
     lidt [idt_descriptor]
+    ret
+
+init_pic:
+    ; Remapper le PIC
+    mov al, 0x11
+    out 0x20, al
+    out 0xA0, al
+    mov al, 0x20
+    out 0x21, al
+    mov al, 0x28
+    out 0xA1, al
+    mov al, 0x04
+    out 0x21, al
+    mov al, 0x02
+    out 0xA1, al
+    mov al, 0x01
+    out 0x21, al
+    out 0xA1, al
+    mov al, 0x0
+    out 0x21, al
+    out 0xA1, al
     ret
 
 logon:
