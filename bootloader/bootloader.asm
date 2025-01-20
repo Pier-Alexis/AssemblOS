@@ -1,4 +1,3 @@
-; filepath: /home/pariki/AssemblOS/bootloader/bootloader.asm
 BITS 16
 ORG 0x7C00
 
@@ -40,10 +39,6 @@ start:
     jc load_error
 
     ; Sauter à stage2
-    ; Copilot write this line so i dont know if it is good since im a big noob at asm
-    ; normally i would like to put jump 0x2000 without the 0x0000 but if copilot said it was like this
-    ; after somes conversation with copilot he said that my code and hes code was real mode bootloader
-    ; So jump 0x2000:0x0000 where 0x2000 is the adress and 0x0000 the "offset" (dunno waths this for now, but idc)
     jmp 0x2000:0x0000
 
 load_error:
