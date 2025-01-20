@@ -1,4 +1,3 @@
-; filepath: /home/pariki/AssemblOS/bootloader/cdrom.asm
 BITS 16
 
 global read_cdrom
