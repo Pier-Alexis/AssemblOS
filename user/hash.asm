@@ -1,3 +1,4 @@
+; filepath: /user/hash.asm
 section .data
     passwd db 'Enter password: ', 0
     passwd_len equ $ - passwd
