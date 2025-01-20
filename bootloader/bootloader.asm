@@ -1,3 +1,4 @@
+; filepath: /bootloader/bootloader.asm
 BITS 16
 ORG 0x7C00
 
@@ -27,6 +28,12 @@ start:
     out 0xA1, al
     mov al, 0x0
     out 0x21, al
+
+    ; Vérification de la mémoire
+    mov ah, 0x00
+    int 0x12
+    cmp ax, 0x0000
+    je load_error
 
     ; Charger le stage2
     mov bx, 0x2000
