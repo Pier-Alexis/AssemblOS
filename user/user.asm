@@ -1,3 +1,4 @@
+; filepath: /user/user.asm
 section .data
     prompt_username db "Enter username: ", 0
     prompt_password db "Do you want a password? (y/n): ", 0
